@@ -68,8 +68,35 @@ Output is in the `dist` directory.
 - **Build Command**: `npm run build`
 - **Public Directory**: `dist`
 
+## Security Configuration
+
+### API Keys Setup
+All API keys are loaded from environment variables (no hardcoded values in code).
+Set the following environment variables in Replit Secrets:
+
+**Required for basic functionality:**
+- `VITE_SUPABASE_URL` - Supabase project URL
+- `VITE_SUPABASE_ANON` - Supabase anon key (client-safe, RLS protected)
+
+**Optional API integrations:**
+- `VITE_IPINFO_TOKEN` - IP geolocation
+- `VITE_FIREBASE_API_KEY` - Firebase (public config)
+- `VITE_SHODAN_API_KEY` - Shodan threat intel
+- `VITE_CENSYS_API_ID` / `VITE_CENSYS_API_SECRET` - Censys
+- `VITE_GREYNOISE_API_KEY` - GreyNoise
+- `VITE_ALIENVAULT_OTX_API_KEY` - AlienVault OTX
+- `VITE_VIRUSTOTAL_API_KEY` - VirusTotal
+- `VITE_ABUSEIPDB_API_KEY` - AbuseIPDB
+
+### Security Notes
+- **SUPABASE_SERVICE_ROLE** is intentionally NOT included (never expose in frontend)
+- For production, threat intelligence API calls should be proxied through a backend
+- Firebase and Supabase anon keys are designed for client-side use (with security rules)
+
 ## Recent Changes
+- **Security**: Removed all hardcoded API keys, now loaded from environment variables
+- **Security**: Removed SUPABASE_SERVICE_ROLE from frontend (critical fix)
+- **Landing Page**: Created Email Threat Analysis marketing page with Tahoe glass theme
 - Configured Vite for Replit proxy compatibility
 - Fixed LSP errors in service files
-- Verified all API integrations work correctly
 - All components properly display loading/error states

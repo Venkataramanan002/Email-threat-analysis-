@@ -32,8 +32,8 @@ export class EmailVerificationService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEYS.SUPABASE_SERVICE_ROLE}`,
-          'apikey': API_KEYS.SUPABASE_SERVICE_ROLE
+          'Authorization': `Bearer ${API_KEYS.SUPABASE_ANON}`,
+          'apikey': API_KEYS.SUPABASE_ANON
         },
         body: JSON.stringify({
           email,
