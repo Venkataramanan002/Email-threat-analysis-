@@ -13,7 +13,7 @@ const OAuthCallback = () => {
         const accessToken = sessionData.session?.provider_token as string | undefined;
 
         if (!accessToken) {
-          navigate("/");
+          navigate("/dashboard");
           return;
         }
 
@@ -77,9 +77,9 @@ const OAuthCallback = () => {
           }, { onConflict: 'provider,provider_sub' });
         }
 
-        navigate("/");
+        navigate("/dashboard");
       } catch {
-        navigate("/");
+        navigate("/dashboard");
       }
     };
     handle();

@@ -74,7 +74,7 @@ const Auth = () => {
           }
           throw error;
         }
-        navigate("/");
+        navigate("/dashboard");
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
