@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { storeAccount, AccountObject } from "./localAccountService";
 
 export interface OAuthIdentity {
   email: string | null;
@@ -9,99 +10,56 @@ export interface OAuthIdentity {
 }
 
 export const oauthService = {
-  async listIdentities(): Promise<OAuthIdentity[]> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
-
-    const { data, error } = await supabase
-      .from('oauth_users')
-      .select('email,name,picture,provider,provider_sub')
-      .eq('user_id', user.id)
-      .order('updated_at', { ascending: false });
-
-    if (error) return [];
-    return (data || []) as OAuthIdentity[];
-  },
-
+  /**
+   * Switch to a specific Google account by email
+   * Uses select_account prompt to allow user to choose account
+   */
   async switchToGoogle(email: string): Promise<void> {
+    if (!email) {
+      throw new Error('Email is required to switch accounts');
+    }
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/oauth/callback`,
         scopes: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.readonly',
-        queryParams: { login_hint: email, prompt: 'consent' }
+        queryParams: { 
+          login_hint: email, 
+          prompt: 'select_account consent' // Use select_account to show account picker
+        }
       }
     });
-  }
-  ,
-  async verifyCurrentAccount(): Promise<Record<string, any>> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { authenticated: false };
-    const emailCandidate = user.email || (() => {
-      try {
-        const raw = localStorage.getItem('oauth_profile');
-        if (raw) return (JSON.parse(raw).email as string | undefined) || undefined;
-      } catch {}
-      return undefined;
-    })() || undefined;
+  },
 
-    const results: Record<string, any> = { authenticated: true, userId: user.id };
+  /**
+   * Add a new Google account
+   * Uses select_account prompt to show account picker
+   */
+  async addAccount(): Promise<void> {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/oauth/callback`,
+        scopes: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/gmail.readonly',
+        queryParams: { prompt: 'select_account consent' } // Show account picker
+      }
+    });
+  },
 
-    const { data: profileByUserId } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
-    results.profileByUserId = profileByUserId || null;
-
-    if (emailCandidate) {
-      const { data: profilesByEmail } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('email', emailCandidate);
-      results.profilesByEmail = profilesByEmail || [];
-    }
-
-    const googleSub = user.identities?.[0]?.identity_data?.sub as string | undefined;
-    const providerSub = emailCandidate || googleSub || user.id;
-
-    const { data: oauthByUserId } = await supabase
-      .from('oauth_users')
-      .select('*')
-      .eq('user_id', user.id);
-    results.oauthByUserId = oauthByUserId || [];
-
-    if (emailCandidate) {
-      const { data: oauthByEmail } = await supabase
-        .from('oauth_users')
-        .select('*')
-        .eq('email', emailCandidate);
-      results.oauthByEmail = oauthByEmail || [];
-    }
-
-    const { data: oauthByProviderSub } = await supabase
-      .from('oauth_users')
-      .select('*')
-      .eq('provider', 'google')
-      .eq('provider_sub', providerSub);
-    results.oauthByProviderSub = oauthByProviderSub || [];
-
-    if ((!results.oauthByUserId || results.oauthByUserId.length === 0) && emailCandidate) {
-      await supabase
-        .from('oauth_users')
-        .upsert({
-          user_id: user.id,
-          email: emailCandidate,
-          provider: 'google',
-          provider_sub: providerSub
-        }, { onConflict: 'provider,provider_sub' });
-      const { data: postUpsert } = await supabase
-        .from('oauth_users')
-        .select('*')
-        .eq('user_id', user.id);
-      results.oauthByUserIdAfterUpsert = postUpsert || [];
-    }
-
-    return results;
+  /**
+   * Store account data from OAuth callback
+   * Called after successful OAuth authentication
+   */
+  async storeAccountFromOAuth(profileData: {
+    name: string;
+    email: string;
+    picture?: string;
+  }): Promise<void> {
+    const account: AccountObject = {
+      name: profileData.name,
+      email: profileData.email,
+      profileImgUrl: profileData.picture || ''
+    };
+    storeAccount(account);
   }
 };

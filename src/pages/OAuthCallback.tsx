@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchRealGoogleData, fetchGmailMetadata, fetchGmailMessages } from "@/services/googleService";
+import { oauthService } from "@/services/oauthService";
 
 const OAuthCallback = () => {
   const navigate = useNavigate();
@@ -33,13 +34,23 @@ const OAuthCallback = () => {
         let emailVerified = googleData?.profile?.emailVerified || null;
 
         // Store comprehensive Google data
-        localStorage.setItem('oauth_profile', JSON.stringify({
+        const oauthProfile = {
           name: profileName,
           email: profileEmail,
           picture: profilePicture,
           locale: locale,
           emailVerified: emailVerified
-        }));
+        };
+        localStorage.setItem('oauth_profile', JSON.stringify(oauthProfile));
+
+        // Store account in localStorage accounts system
+        if (profileEmail && profileEmail !== 'unable to fetch data' && profileName && profileName !== 'unable to fetch data') {
+          await oauthService.storeAccountFromOAuth({
+            name: profileName,
+            email: profileEmail,
+            picture: profilePicture || undefined
+          });
+        }
 
         // Store Gmail metadata
         if (googleData?.gmailMetadata) {

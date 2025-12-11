@@ -17,6 +17,7 @@ import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { userDataService } from "@/services/userDataService";
 import { DataValidationReportService } from "@/services/dataValidationReport";
 import { dataAggregationService } from "@/services/dataAggregationService";
+import { initializeFromOAuthProfile } from "@/services/localAccountService";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,6 +28,9 @@ const Index = () => {
   const [refreshKey, setRefreshKey] = useState<string>("");
 
   useEffect(() => {
+    // Initialize accounts from localStorage on page load
+    initializeFromOAuthProfile();
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
