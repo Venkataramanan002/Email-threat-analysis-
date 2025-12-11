@@ -1,6 +1,7 @@
-# Email Threat Analysis – Project Overview
+<img width="1677" height="960" alt="Screenshot 2025-12-06 at 4 02 16 PM" src="https://github.com/user-attachments/assets/5d03e29b-0b36-4948-a398-d415e5fadb59" /># Email Threat Analysis – Project Overview
 
 A client-side web app for multi-account Gmail security insights. It authenticates with Google OAuth, caches data locally, and visualizes threat, behavior, and settings insights across tabs.
+<img width="1677" height="960" alt="Screenshot 2025-12-06 at 4 02 16 PM" src="https://github.com/user-attachments/assets/58da26b5-bd3c-4aaf-a25c-b21e65d10d63" />
 
 ## Goals
 - Help users inspect Gmail-related security signals (spam/suspicious domains, forwarding, delegated accounts).
@@ -26,7 +27,8 @@ A client-side web app for multi-account Gmail security insights. It authenticate
 - `oauth_profile`: basic Google profile
 - `gmail_metadata`: mailbox stats (counts, suspicious domains, senders)
 - `gmail_settings`: forwarding, delegated accounts, POP/IMAP, etc.
-- `gmail_messages`, `google_real_data`: cached Gmail/profile data for components
+- `gmail_messag<img width="393" height="192" alt="Screenshot 2025-12-08 at 6 57 17 PM" src="https://github.com/user-attachments/assets/e8ccc3c4-2b25-49d6-a4a1-d75e85dc88e4" />
+es`, `google_real_data`: cached Gmail/profile data for components
 
 ## UI Tabs & Data Shown
 - **Dashboard**: High-level metrics, risk summary.
