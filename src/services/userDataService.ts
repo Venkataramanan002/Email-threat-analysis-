@@ -1,5 +1,7 @@
 import { getComprehensiveNetworkInfo } from './ipService';
 import { ThreatAnalysisService } from './threatAnalysisService';
+import { getDeviceFingerprintHash, getDeviceInfo } from './deviceFingerprintService';
+import { initializeSession } from './sessionTimeService';
 
 export interface PhoneValidationInfo {
   isValid?: boolean;
@@ -210,7 +212,7 @@ class UserDataService {
         email: userEmail,
         name: userName,
         picture: userPicture,
-        deviceType: `Desktop (${navigator.userAgent.includes('Chrome') ? 'Chrome' : 'Browser'}, ${navigator.platform})`,
+        deviceType: getDeviceInfo(),
         ipAddress: networkInfo.ip,
         location: networkInfo.location || 'Unknown location',
         city: networkInfo.city,
@@ -229,11 +231,16 @@ class UserDataService {
         isTor: networkInfo.isTor,
         isHosting: networkInfo.isHosting,
         networkThreatLevel: networkInfo.threatLevel,
-        deviceFingerprint: `FP_${Math.random().toString(36).substring(7)}`,
+        deviceFingerprint: getDeviceFingerprintHash(),
         sessionStart: new Date().toISOString(),
         riskScore,
         riskLevel: riskScore > 70 ? 'Critical' : riskScore > 40 ? 'High' : 'Medium'
       };
+
+      // Initialize session time tracking
+      if (userEmail && userEmail !== 'unable to fetch data') {
+        initializeSession(userEmail);
+      }
 
       // Store Gmail data in profile for easy access (extend UserProfile type if needed)
       (this.userProfile as any).gmailMetadata = gmailMetadata;

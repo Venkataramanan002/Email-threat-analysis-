@@ -106,94 +106,18 @@ const UserManagement = ({ refreshKey }: Props) => {
           });
         }
         
-        // Fallback to fake data if no real user
+        // No fake data fallback - show empty state if no real user
         if (realUsers.length === 0) {
-          realUsers.push(
-            {
-              id: "user_001",
-              email: "john.doe@example.com",
-              name: "John Doe",
-              riskScore: 95,
-              status: "blocked",
-              lastLogin: "2024-01-15 14:32:18",
-              location: "Unknown VPN",
-              device: "Chrome/Windows",
-              totalSessions: 156,
-              flaggedActivities: 23,
-              accountAge: "6 months",
-              threats: ["Multiple failed logins", "Suspicious location", "Bot-like behavior"]
-            },
-    {
-      id: "user_002",
-      email: "jane.smith@example.com", 
-      name: "Jane Smith",
-      riskScore: 15,
-      status: "normal",
-      lastLogin: "2024-01-15 14:28:45",
-      location: "New York, US",
-      device: "Safari/macOS",
-      totalSessions: 42,
-      flaggedActivities: 0,
-      accountAge: "2 years",
-      threats: []
-    },
-    {
-      id: "user_003",
-      email: "bob.wilson@example.com",
-      name: "Bob Wilson", 
-      riskScore: 78,
-      status: "flagged",
-      lastLogin: "2024-01-15 14:25:12",
-      location: "London, UK",
-      device: "Firefox/Linux",
-      totalSessions: 89,
-      flaggedActivities: 12,
-      accountAge: "1 year",
-      threats: ["Account takeover attempt", "Password change from new device"]
-    },
-    {
-      id: "user_004",
-      email: "alice.brown@example.com",
-      name: "Alice Brown",
-      riskScore: 32,
-      status: "monitoring",
-      lastLogin: "2024-01-15 14:22:33",
-      location: "California, US",
-      device: "Chrome/Android",
-      totalSessions: 67,
-      flaggedActivities: 3,
-      accountAge: "8 months",
-      threats: ["Unusual navigation pattern"]
-    },
-    {
-      id: "user_005",
-      email: "temp.user.456@tempmail.com",
-      name: "Unknown User",
-      riskScore: 88,
-      status: "suspicious", 
-      lastLogin: "2024-01-15 14:18:07",
-      location: "Moscow, Russia",
-      device: "Chrome/Linux",
-      totalSessions: 12,
-      flaggedActivities: 8,
-      accountAge: "2 days",
-      threats: ["Disposable email", "New account", "Rapid activity"]
-    },
-    {
-      id: "user_006",
-      email: "mike.jones@example.com",
-      name: "Mike Jones",
-      riskScore: 45,
-      status: "normal",
-      lastLogin: "2024-01-15 14:15:58",
-      location: "Texas, US", 
-      device: "Edge/Windows",
-      totalSessions: 234,
-      flaggedActivities: 5,
-      accountAge: "3 years",
-      threats: ["Occasional unusual timing"]
-            }
-          );
+          // Show empty state with message instead of fake data
+          setSummaryStats({
+            totalUsers: 0,
+            blockedUsers: 0,
+            suspiciousUsers: 0,
+            avgRiskScore: 0
+          });
+          setUsers([]);
+          setIsLoading(false);
+          return;
         }
         
         // Calculate summary stats
@@ -212,29 +136,13 @@ const UserManagement = ({ refreshKey }: Props) => {
         setUsers(realUsers);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        // Fallback to fake data on error
-        const fallbackUsers = [
-          {
-            id: "user_001",
-            email: "john.doe@example.com",
-            name: "John Doe",
-            riskScore: 95,
-            status: "blocked",
-            lastLogin: "2024-01-15 14:32:18",
-            location: "Unknown VPN",
-            device: "Chrome/Windows",
-            totalSessions: 156,
-            flaggedActivities: 23,
-            accountAge: "6 months",
-            threats: ["Multiple failed logins", "Suspicious location", "Bot-like behavior"]
-          }
-        ];
-        setUsers(fallbackUsers);
+        // Show empty state on error - no fake data
+        setUsers([]);
         setSummaryStats({
-          totalUsers: fallbackUsers.length,
-          blockedUsers: 1,
+          totalUsers: 0,
+          blockedUsers: 0,
           suspiciousUsers: 0,
-          avgRiskScore: 95
+          avgRiskScore: 0
         });
       } finally {
         setIsLoading(false);

@@ -7,14 +7,16 @@ import SecurityEvents from "@/components/SecurityEvents";
 import UserManagement from "@/components/UserManagement";
 import SecurityScenarioAnalysis from "@/components/SecurityScenarioAnalysis";
 import DataValidationReportComponent from "@/components/DataValidationReport";
-import { Shield, LogOut, User, RefreshCw } from "lucide-react";
+import { Shield, RefreshCw } from "lucide-react";
 import AccountSwitcher from "@/components/AccountSwitcher";
+import AccountDropdown from "@/components/AccountDropdown";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 import { userDataService } from "@/services/userDataService";
+import { isDevModeEnabled, initDevMode } from "@/services/devModeService";
 import { DataValidationReportService } from "@/services/dataValidationReport";
 import { dataAggregationService } from "@/services/dataAggregationService";
 import { initializeFromOAuthProfile } from "@/services/localAccountService";
@@ -26,10 +28,35 @@ const Index = () => {
   const [loading, setLoading] = useState(true);
   const [dataValidationReport, setDataValidationReport] = useState<any>(null);
   const [refreshKey, setRefreshKey] = useState<string>("");
+  const [userProfile, setUserProfile] = useState<{ name?: string; picture?: string }>({});
+  const [devMode, setDevMode] = useState(false);
 
   useEffect(() => {
+    // Initialize dev mode theme
+    initDevMode();
+    setDevMode(isDevModeEnabled());
+    
     // Initialize accounts from localStorage on page load
     initializeFromOAuthProfile();
+    
+    // Get user profile data from localStorage
+    try {
+      const googleDataRaw = localStorage.getItem('google_real_data');
+      const oauthRaw = localStorage.getItem('oauth_profile');
+      if (googleDataRaw) {
+        const googleData = JSON.parse(googleDataRaw);
+        setUserProfile({
+          name: googleData?.profile?.name,
+          picture: googleData?.profile?.picture
+        });
+      } else if (oauthRaw) {
+        const oauth = JSON.parse(oauthRaw);
+        setUserProfile({
+          name: oauth?.name,
+          picture: oauth?.picture
+        });
+      }
+    } catch {}
     
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -135,10 +162,9 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 px-5 py-2.5 tahoe-glass rounded-full">
-                <User className="w-4 h-4 text-blue-400 tahoe-icon" />
-                <span className="tahoe-text font-mono">{user.email}</span>
-              </div>
+              {devMode && (
+                <span className="dev-badge">DEV MODE</span>
+              )}
               <Button
                 onClick={handleRefresh}
                 variant="outline"
@@ -148,14 +174,12 @@ const Index = () => {
                 Refresh
               </Button>
               <AccountSwitcher />
-              <Button 
-                onClick={handleLogout}
-                variant="outline"
-                size="sm"
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </Button>
+              <AccountDropdown
+                userEmail={user.email || ''}
+                userName={userProfile.name}
+                userPicture={userProfile.picture}
+                onLogout={handleLogout}
+              />
             </div>
           </div>
         </div>

@@ -45,6 +45,23 @@ export interface BotDetection {
   confidence: string;
 }
 
+function generateDeterministicFingerprint(): string {
+  const userAgent = navigator?.userAgent || 'Unknown';
+  const platform = navigator?.platform || 'Unknown';
+  const screenRes = typeof window !== 'undefined' ? `${window.screen?.width || 0}x${window.screen?.height || 0}` : '0x0';
+  const timezone = Intl?.DateTimeFormat()?.resolvedOptions()?.timeZone || 'Unknown';
+  const language = navigator?.language || 'en-US';
+  
+  const data = `${userAgent}|${platform}|${screenRes}|${timezone}|${language}`;
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return `FP_${Math.abs(hash).toString(36).toUpperCase()}`;
+}
+
 // Dynamic sample data that adapts to current user
 export const getCurrentUserSession = (email?: string): UserSession => {
   const defaultEmail = email || "user@example.com";
@@ -56,7 +73,7 @@ export const getCurrentUserSession = (email?: string): UserSession => {
     deviceType: "Desktop (Chrome, Windows 10)",
     ipAddress: generateRandomIP(),
     location: getDynamicLocation(defaultEmail),
-    deviceFingerprint: `FP_${Math.random().toString(36).substring(7)}`,
+    deviceFingerprint: generateDeterministicFingerprint(),
     sessionStart: new Date().toISOString(),
     riskScore,
     riskLevel: riskScore > 70 ? "Critical" : riskScore > 40 ? "High" : "Medium",
@@ -123,76 +140,26 @@ const generateDynamicEvents = (email: string, riskScore: number): SecurityEvent[
   ];
 };
 
-// Static sample data for fallback
-export const sampleSecurityEvents: SecurityEvent[] = [
-  {
-    id: "evt_001",
-    timestamp: "2025-05-30 17:06:30",
-    eventType: "User Behavior",
-    userId: "USER_LegitCustomer_789",
-    ipAddress: "203.0.113.10",
-    location: "Bengaluru, India",
-    deviceFingerprint: "FP_BHQ654JKL",
-    severity: "low",
-    status: "normal",
-    details: "User lands on homepage - Page View: /homepage, Referrer: direct"
-  },
-  {
-    id: "evt_002",
-    timestamp: "2025-05-30 17:06:45",
-    eventType: "Authentication Success",
-    userId: "USER_LegitCustomer_789",
-    ipAddress: "203.0.113.10",
-    location: "Bengaluru, India",
-    severity: "low",
-    status: "success",
-    details: "Successful login - Username: anjali.sharma@example.com, Method: Password, Latency: 300ms"
-  }
-];
+// Empty fallback data - real data comes from authenticated user
+export const sampleSecurityEvents: SecurityEvent[] = [];
 
 export const sampleUserSession: UserSession = getCurrentUserSession();
 
-export const sampleThreatIntelligence: ThreatIntelligence[] = [
-  {
-    ipAddress: "185.199.110.153",
-    threatType: "Botnet Command & Control, Spam Source",
-    confidenceScore: 95,
-    riskLevel: "High",
-    lastSeen: "2025-05-30 10:00:00",
-    associatedCampaigns: ["Phishing Kit Alpha"]
-  }
-];
+export const sampleThreatIntelligence: ThreatIntelligence[] = [];
 
-export const sampleBotDetection: BotDetection[] = [
-  {
-    ipAddress: "104.28.249.200",
-    botScore: 88,
-    botType: "Automated Scraper",
-    detectionReasons: [
-      "Extreme Request Rate",
-      "Lack of typical human mouse/keyboard events",
-      "Unusual sequential access pattern to user profiles"
-    ],
-    recommendedAction: "Block traffic from this IP address immediately",
-    confidence: "High"
-  }
-];
+export const sampleBotDetection: BotDetection[] = [];
 
+// Empty metrics fallback - real metrics are derived from Gmail/behavior data
 export const sampleMetrics = {
-  activeUsers: 1247,
-  threatsDetected: 352,
-  threatsBlocked: 323,
-  botTraffic: 156,
-  userGrowth: "+12%",
-  threatGrowth: "+18%",
-  blockRate: "91.8%",
-  botPercentage: "15.2%"
+  activeUsers: 0,
+  threatsDetected: 0,
+  threatsBlocked: 0,
+  botTraffic: 0,
+  userGrowth: "N/A",
+  threatGrowth: "N/A",
+  blockRate: "N/A",
+  botPercentage: "N/A"
 };
 
-export const sampleHourlyThreatData = [
-  { hour: "14:00", bots: 12, fraud: 5, attacks: 3 },
-  { hour: "15:00", bots: 18, fraud: 8, attacks: 4 },
-  { hour: "16:00", bots: 25, fraud: 12, attacks: 7 },
-  { hour: "17:00", bots: 42, fraud: 15, attacks: 9 },
-  { hour: "18:00", bots: 28, fraud: 9, attacks: 5 }
-];
+// Empty hourly data fallback - real data is derived from email timestamps
+export const sampleHourlyThreatData: { hour: string; bots: number; fraud: number; attacks: number }[] = [];
